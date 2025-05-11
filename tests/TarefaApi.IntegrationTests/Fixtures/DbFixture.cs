@@ -1,17 +1,28 @@
-﻿using Npgsql;
+﻿using Microsoft.Extensions.Configuration;
+using Npgsql;
 
 namespace TarefaApi.IntegrationTests.Fixtures;
 
 public class DbFixture : IDisposable
 {
     public string DatabaseName { get; }
-    public string ConnectionString => $"Host=localhost;Username=admin;Password=aline123;Database={DatabaseName}";
+    public string ConnectionString => $"{_baseConnectionString};Database={DatabaseName}";
+    private readonly string _adminConnectionString;
+    private readonly string _baseConnectionString;
 
     public DbFixture()
     {
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json")
+            .Build();
+
+        _adminConnectionString = configuration.GetConnectionString("DefaultConnection")!;
+        _baseConnectionString = _adminConnectionString[.._adminConnectionString.LastIndexOf("Database=", StringComparison.OrdinalIgnoreCase)];
+
         DatabaseName = $"test_db_{Guid.NewGuid():N}";
 
-        using var conn = new NpgsqlConnection("Host=localhost;Username=admin;Password=aline123;Database=postgres");
+        using var conn = new NpgsqlConnection(_adminConnectionString);
         conn.Open();
 
         using var cmd = conn.CreateCommand();
@@ -21,10 +32,9 @@ public class DbFixture : IDisposable
 
     public void Dispose()
     {
-        using var conn = new NpgsqlConnection("Host=localhost;Username=admin;Password=aline123;Database=postgres");
+        using var conn = new NpgsqlConnection(_adminConnectionString);
         conn.Open();
 
-        // Termina conexões pendentes e remove o banco
         using var terminateCmd = conn.CreateCommand();
         terminateCmd.CommandText = $@"
             SELECT pg_terminate_backend(pid)
