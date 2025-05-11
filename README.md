@@ -98,4 +98,14 @@ Embora os testes de integração ofereçam uma abordagem robusta para validar fu
 
 ---
 
-> Para mais conteúdos como este, acede a [gptonline.ai](https://gptonline.ai/)
+### 📄 Licença
+
+Este projeto está licenciado sob os termos da licença MIT.
+
+---
+
+### 🤝 Contribuição
+
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests.
+
+---
