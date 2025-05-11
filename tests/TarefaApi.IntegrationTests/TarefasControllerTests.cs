@@ -1,17 +1,15 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 using TarefaApi.Domain.Entities;
-using TarefaApi.IntegrationTests.Factories;
-using TarefaApi.IntegrationTests.Fixtures;
 
-namespace TarefaApi.IntegrationTests;
-
-public class TarefasControllerTests : IClassFixture<DbFixture>
+public class TarefasControllerTests : IClassFixture<PostgreSqlContainerFixture>
 {
     private readonly HttpClient _client;
 
-    public TarefasControllerTests(DbFixture dbFixture)
+    public TarefasControllerTests(PostgreSqlContainerFixture fixture)
     {
-        var factory = new CustomWebApplicationFactory(dbFixture.ConnectionString);
+        var factory = new CustomWebApplicationFactory(fixture.Container.GetConnectionString());
+
         _client = factory.CreateClient();
     }
 
@@ -28,5 +26,15 @@ public class TarefasControllerTests : IClassFixture<DbFixture>
 
         Assert.NotNull(result);
         Assert.Equal("Teste", result!.Titulo);
+    }
+
+    [Fact]
+    public async Task Get_NonExistent_Tarefa_Should_Return_NotFound()
+    {
+        var nonExistentId = Guid.NewGuid(); // ID que não existe no banco
+
+        var response = await _client.GetAsync($"/api/tarefas/{nonExistentId}");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

@@ -5,8 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using TarefaApi.Infrastructure.Context;
 using TarefaApi.WebApi;
 
-namespace TarefaApi.IntegrationTests.Factories;
-
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly string _connectionString;
@@ -20,13 +18,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureServices(services =>
         {
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<TarefaDbContext>));
+            var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<TarefaDbContext>));
+
             if (descriptor != null)
                 services.Remove(descriptor);
 
-            services.AddDbContext<TarefaDbContext>(options =>
-                options.UseNpgsql(_connectionString));
+            services.AddDbContext<TarefaDbContext>(options => options.UseNpgsql(_connectionString));
 
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
